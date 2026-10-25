@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>মুয়াজ ট্যুরস | অ্যাডমিন ড্যাশবোর্ড (CMS)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#fcf9f2] text-gray-900 font-sans min-h-screen p-6 md:p-10">
+  
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-[#F26522]">মুয়াজ ট্যুরস অ্যাডমিন ড্যাশবোর্ড</h1>
+        <p class="text-gray-500 text-sm">ইনকোয়ারি চেক করুন এবং ওয়েবসাইট কনটেন্ট ও প্যাকেজ ম্যানেজ করুন</p>
+      </div>
+      <a href="/" target="_blank" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+        ওয়েবসাইট দেখুন ↗
+      </a>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex gap-3 mb-6">
+      <button onclick="switchTab('inquiries')" id="tab-inquiries" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-[#F26522] text-white shadow-sm transition-all">
+        গ্রাহক ইনকোয়ারি তালিকা (<span id="inquiry-count">0</span>)
+      </button>
+      <button onclick="switchTab('packages')" id="tab-packages" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 transition-all">
+        প্যাকেজ CMS (যোগ ও এডিট)
+      </button>
+      <button onclick="switchTab('settings')" id="tab-settings" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 transition-all">
+        ওয়েবসাইট ও ঠিকানা সেটিংস
+      </button>
+    </div>
+
+    <!-- TAB 1: INQUIRIES -->
+    <div id="section-inquiries" class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="p-4 border-b border-gray-100 font-bold text-gray-800">সর্বশেষ কাস্টমার বুকিং ও ইনকোয়ারি</div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-[#f6f3ec] border-b border-gray-200 text-gray-700 text-xs uppercase tracking-wider">
+              <th class="p-4">আইডি</th>
+              <th class="p-4">গ্রাহকের নাম</th>
+              <th class="p-4">ফোন নম্বর</th>
+              <th class="p-4">প্যাকেজের নাম</th>
+              <th class="p-4">বার্তা</th>
+              <th class="p-4">সময়</th>
+            </tr>
+          </thead>
+          <tbody id="inquiries-table" class="divide-y divide-gray-100 text-sm">
+            <tr><td colspan="6" class="p-6 text-center text-gray-400">লোড হচ্ছে...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 2: PACKAGES (CMS) -->
+    <div id="section-packages" class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hidden space-y-8">
+      
+      <!-- Add New Package Form -->
+      <div class="bg-[#f6f3ec] p-6 rounded-2xl border border-gray-200">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">নতুন প্যাকেজ যোগ করুন</h3>
+        <form onsubmit="addNewPackage(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">প্যাকেজের বিভাগ (Type)</label>
+            <select id="new-type" class="w-full px-3 py-2 border rounded-lg bg-white text-sm" required>
+              <option value="hajj">হজ প্যাকেজ (Hajj)</option>
+              <option value="umrah">উমরাহ প্যাকেজ (Umrah)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">হজ ক্যাটাগরি (শিফটিং/নন-শিফটিং)</label>
+            <select id="new-category" class="w-full px-3 py-2 border rounded-lg bg-white text-sm">
+              <option value="non-shifting">নন-শিফটিং হজ (Non-Shifting)</option>
+              <option value="shifting">শিফটিং হজ (Shifting)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">প্যাকেজের নাম (Title)</label>
+            <input type="text" id="new-title" placeholder="যেমন: স্পেশাল হজ প্যাকেজ" class="w-full px-3 py-2 border rounded-lg bg-white text-sm" required>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">মূল্য (Price)</label>
+            <input type="text" id="new-price" placeholder="যেমন: ৭,২০,০০০" class="w-full px-3 py-2 border rounded-lg bg-white text-sm" required>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">সময়কাল (Duration)</label>
+            <input type="text" id="new-duration" placeholder="যেমন: ৪০ দিন • শিফটিং" class="w-full px-3 py-2 border rounded-lg bg-white text-sm" required>
+          </div>
+          <div class="md:col-span-3">
+            <label class="block text-xs font-bold text-gray-700 mb-1">প্যাকেজ বিবরণ / হোটেল (Description)</label>
+            <input type="text" id="new-desc" placeholder="যেমন: মক্কা ও মদিনা জোন অথবা সমমানের কোনো হোটেল" class="w-full px-3 py-2 border rounded-lg bg-white text-sm" required>
+          </div>
+          <div class="md:col-span-3">
+            <button type="submit" class="bg-[#F26522] hover:bg-[#d26424] text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-all shadow-sm">
+              + নতুন প্যাকেজ পাবলিশ করুন
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Existing Packages List -->
+      <div>
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-bold text-gray-900">বিদ্যমান প্যাকেজসমূহ (এডিট ও ডিলিট করুন)</h3>
+        </div>
+        <div id="packages-list" class="space-y-4">
+          <p class="text-gray-400">লোড হচ্ছে...</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 3: SETTINGS -->
+    <div id="section-settings" class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hidden">
+      <h2 class="text-xl font-bold text-gray-900 mb-2">ওয়েবসাইট ও যোগাযোগের তথ্য ম্যানেজমেন্ট</h2>
+      <form id="settings-form" onsubmit="saveSettings(event)" class="space-y-5 max-w-xl">
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">WhatsApp নম্বর</label>
+          <input type="text" id="set-whatsapp" class="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none" required>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">হেল্পলাইন ফোন নম্বর</label>
+          <input type="text" id="set-helpline" class="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none" required>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">অফিসের ঠিকানা</label>
+          <input type="text" id="set-address" class="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none" required>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">অফিস ইমেইল</label>
+          <input type="email" id="set-email" class="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none" required>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">অফিস সময়</label>
+          <input type="text" id="set-hours" class="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none" required>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">শীর্ষ অ্যানাউন্সমেন্ট টেক্সট</label>
+          <input type="text" id="set-announcement" class="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none" required>
+        </div>
+        <button type="submit" class="bg-[#F26522] hover:bg-[#d26424] text-white font-bold px-6 py-3 rounded-xl shadow-md">
+          সেটিংস সংরক্ষণ করুন
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+  <script>
+    function switchTab(tabName) {
+      document.getElementById('section-inquiries').classList.add('hidden');
+      document.getElementById('section-packages').classList.add('hidden');
+      document.getElementById('section-settings').classList.add('hidden');
+
+      document.getElementById('tab-inquiries').className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 transition-all";
+      document.getElementById('tab-packages').className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 transition-all";
+      document.getElementById('tab-settings').className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 transition-all";
+
+      document.getElementById('section-' + tabName).classList.remove('hidden');
+      document.getElementById('tab-' + tabName).className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-[#F26522] text-white shadow-sm transition-all";
+    }
+
+    async function loadInquiries() {
+      try {
+        const response = await fetch('/api/inquiries');
+        const inquiries = await response.json();
+        document.getElementById('inquiry-count').innerText = inquiries.length;
+        const tbody = document.getElementById('inquiries-table');
+
+        if (inquiries.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">কোনো ইনকোয়ারি পাওয়া যায়নি।</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = '';
+        inquiries.forEach(item => {
+          const row = document.createElement('tr');
+          row.className = 'hover:bg-gray-50 transition-colors';
+          row.innerHTML = `
+            <td class="p-4 font-bold text-gray-600">#${item.id}</td>
+            <td class="p-4 font-semibold text-gray-900">${item.name}</td>
+            <td class="p-4 text-gray-700">${item.phone}</td>
+            <td class="p-4"><span class="bg-[#ffdbcb]/40 text-[#9e4200] text-xs font-bold px-2.5 py-1 rounded-full">${item.package_name || 'সাধারণ ইনকোয়ারি'}</span></td>
+            <td class="p-4 text-gray-600 max-w-xs truncate">${item.message || '-'}</td>
+            <td class="p-4 text-gray-400 text-xs">${new Date(item.created_at || Date.now()).toLocaleString()}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        console.error('Error fetching inquiries:', err);
+      }
+    }
+
+    async function loadPackagesForAdmin() {
+      try {
+        const res = await fetch('/api/packages');
+        const pkgs = await res.json();
+        const container = document.getElementById('packages-list');
+        container.innerHTML = '';
+
+        if (pkgs.length === 0) {
+          container.innerHTML = `<p class="text-gray-400 text-sm">কোনো প্যাকেজ নেই।</p>`;
+          return;
+        }
+
+        pkgs.forEach(p => {
+          const isShift = p.category === 'shifting';
+          container.innerHTML += `
+            <div class="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-3">
+              <div class="flex justify-between items-center text-xs text-gray-500 font-bold uppercase">
+                <span>ধরন: ${p.type} (${p.category || 'non-shifting'})</span>
+                <span>ID: #${p.id}</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <select id="cat-${p.id}" class="px-3 py-2 border rounded-lg text-sm bg-white font-bold">
+                  <option value="non-shifting" ${!isShift ? 'selected' : ''}>নন-শিফটিং</option>
+                  <option value="shifting" ${isShift ? 'selected' : ''}>শিফটিং</option>
+                </select>
+                <input type="text" id="title-${p.id}" value="${p.title}" placeholder="প্যাকেজের নাম" class="px-3 py-2 border rounded-lg text-sm bg-white font-bold">
+                <input type="text" id="price-${p.id}" value="${p.price}" placeholder="মূল্য" class="px-3 py-2 border rounded-lg text-sm bg-white font-bold text-[#F26522]">
+                <input type="text" id="duration-${p.id}" value="${p.duration || ''}" placeholder="সময়কাল" class="px-3 py-2 border rounded-lg text-sm bg-white">
+              </div>
+              <div>
+                <input type="text" id="desc-${p.id}" value="${p.description || ''}" placeholder="বিবরণ / হোটেল বিবরণ" class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+              </div>
+              <div class="flex justify-end gap-3 pt-1">
+                <button onclick="updatePackage(${p.id})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors">পরিবর্তন সেভ করুন</button>
+                <button onclick="deletePackage(${p.id})" class="bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors">মুছে ফেলুন</button>
+              </div>
+            </div>
+          `;
+        });
+      } catch (err) {
+        console.error('Error loading packages:', err);
+      }
+    }
+
+    async function addNewPackage(e) {
+      e.preventDefault();
+      const newPkg = {
+        type: document.getElementById('new-type').value,
+        category: document.getElementById('new-category').value,
+        title: document.getElementById('new-title').value.trim(),
+        price: document.getElementById('new-price').value.trim(),
+        duration: document.getElementById('new-duration').value.trim(),
+        description: document.getElementById('new-desc').value.trim()
+      };
+
+      const res = await fetch('/api/packages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newPkg)
+      });
+
+      if (res.ok) {
+        alert('নতুন প্যাকেজ সফলভাবে যোগ করা হয়েছে!');
+        e.target.reset();
+        loadPackagesForAdmin();
+      } else {
+        alert('সংরক্ষণ করতে সমস্যা হয়েছে।');
+      }
+    }
+
+    async function updatePackage(id) {
+      const updatedPkg = {
+        category: document.getElementById(`cat-${id}`).value,
+        title: document.getElementById(`title-${id}`).value.trim(),
+        price: document.getElementById(`price-${id}`).value.trim(),
+        duration: document.getElementById(`duration-${id}`).value.trim(),
+        description: document.getElementById(`desc-${id}`).value.trim()
+      };
+
+      const res = await fetch(`/api/packages/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedPkg)
+      });
+
+      if (res.ok) alert('প্যাকেজ সফলভাবে আপডেট হয়েছে!');
+      else alert('আপডেট করতে সমস্যা হয়েছে।');
+    }
+
+    async function deletePackage(id) {
+      if (!confirm('আপনি কি নিশ্চিতভাবে এই প্যাকেজটি মুছে ফেলতে চান?')) return;
+      const res = await fetch(`/api/packages/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        alert('প্যাকেজটি মুছে ফেলা হয়েছে!');
+        loadPackagesForAdmin();
+      } else {
+        alert('মুছে ফেলতে সমস্যা হয়েছে।');
+      }
+    }
+
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/settings');
+        const settings = await res.json();
+        document.getElementById('set-whatsapp').value = settings.whatsapp_number || '';
+        document.getElementById('set-helpline').value = settings.helpline_number || '';
+        document.getElementById('set-address').value = settings.office_address || '';
+        document.getElementById('set-email').value = settings.office_email || '';
+        document.getElementById('set-hours').value = settings.office_hours || '';
+        document.getElementById('set-announcement').value = settings.announcement_text || '';
+      } catch (err) {
+        console.error('Error loading settings:', err);
+      }
+    }
+
+    async function saveSettings(e) {
+      e.preventDefault();
+      const settings = {
+        whatsapp_number: document.getElementById('set-whatsapp').value.trim(),
+        helpline_number: document.getElementById('set-helpline').value.trim(),
+        office_address: document.getElementById('set-address').value.trim(),
+        office_email: document.getElementById('set-email').value.trim(),
+        office_hours: document.getElementById('set-hours').value.trim(),
+        announcement_text: document.getElementById('set-announcement').value.trim()
+      };
+
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      });
+
+      if (res.ok) alert('ওয়েবসাইট সেটিংস সফলভাবে সংরক্ষিত হয়েছে!');
+      else alert('সংরক্ষণ করতে সমস্যা হয়েছে।');
+    }
+
+    loadInquiries();
+    loadPackagesForAdmin();
+    loadSettings();
+  </script>
+</body>
+</html>
