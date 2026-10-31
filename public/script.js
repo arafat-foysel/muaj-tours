@@ -1,5 +1,5 @@
 let allPackages = [];
-let currentHajjCategory = 'non-shifting';
+let currentHajjTab = 'non-shifting';
 
 // ========================================
 // LOAD PACKAGES AND WEBSITE SETTINGS
@@ -61,6 +61,7 @@ async function loadAllData() {
 
     if (settings.office_hours) {
       document.querySelectorAll(
+        
         '#site-hours, .office-hours-text'
       ).forEach(el => {
         el.innerText = settings.office_hours;
@@ -93,43 +94,21 @@ async function loadAllData() {
 // HAJJ CATEGORY FILTER BUTTONS
 // ========================================
 
-function filterHajjPackages(category) {
-  const requestedCategory = String(
-    category || 'non-shifting'
-  ).trim().toLowerCase();
+function switchHajjTab(category) {
+  currentHajjTab = category.trim().toLowerCase();
+  
+  const btnNon = document.getElementById('tab-btn-non-shifting');
+  const btnShift = document.getElementById('tab-btn-shifting');
 
-  // Accept only the two supported categories.
-  currentHajjCategory =
-    requestedCategory === 'shifting'
-      ? 'shifting'
-      : 'non-shifting';
-
-  const btnNon = document.getElementById('btn-non-shifting');
-  const btnShift = document.getElementById('btn-shifting');
-
-  if (currentHajjCategory === 'non-shifting') {
-    if (btnNon) {
-      btnNon.className =
-        'px-5 py-2.5 rounded-lg bg-white text-[#F26522] text-[14px] font-bold shadow-sm transition-all';
-    }
-
-    if (btnShift) {
-      btnShift.className =
-        'px-5 py-2.5 rounded-lg text-gray-600 hover:text-gray-900 text-[14px] font-medium transition-all';
-    }
+  if (currentHajjTab === 'non-shifting') {
+    if (btnNon) btnNon.className = "px-5 py-2.5 rounded-lg bg-white text-[#F26522] text-[14px] font-bold shadow-sm transition-all";
+    if (btnShift) btnShift.className = "px-5 py-2.5 rounded-lg text-gray-600 hover:text-gray-900 text-[14px] font-medium transition-all";
   } else {
-    if (btnShift) {
-      btnShift.className =
-        'px-5 py-2.5 rounded-lg bg-white text-[#F26522] text-[14px] font-bold shadow-sm transition-all';
-    }
-
-    if (btnNon) {
-      btnNon.className =
-        'px-5 py-2.5 rounded-lg text-gray-600 hover:text-gray-900 text-[14px] font-medium transition-all';
-    }
+    if (btnShift) btnShift.className = "px-5 py-2.5 rounded-lg bg-white text-[#F26522] text-[14px] font-bold shadow-sm transition-all";
+    if (btnNon) btnNon.className = "px-5 py-2.5 rounded-lg text-gray-600 hover:text-gray-900 text-[14px] font-medium transition-all";
   }
 
-  renderHajjPackages(currentHajjCategory);
+  renderHajjPackages(currentHajjTab);
 }
 
 // ========================================
@@ -139,221 +118,107 @@ function filterHajjPackages(category) {
 
 function renderHajjPackages(category) {
   const container = document.getElementById('hajj-packages-grid');
-
   if (!container) return;
-
   container.innerHTML = '';
 
-  const targetCat = String(
-    category || 'non-shifting'
-  ).trim().toLowerCase();
+  const targetCategory = (category || 'non-shifting').trim().toLowerCase();
 
-  // IMPORTANT:
-  // "non-shifting" contains the word "shifting".
-  // Therefore, never use pCat.includes("shift")
-  // to distinguish these two categories.
-
-  const hajjPkgs = allPackages.filter(p => {
-    const type = String(p.type || '').trim().toLowerCase();
-
-    const pCat = String(
-      p.category || 'non-shifting'
-    ).trim().toLowerCase();
-
-    if (type !== 'hajj') {
-      return false;
+  // Filter exact matches from loaded packages
+  const filteredPackages = allPackages.filter(p => {
+    if (p.type !== 'hajj') return false;
+    const pCat = (p.category || 'non-shifting').trim().toLowerCase();
+    
+    if (targetCategory === 'shifting') {
+      return pCat === 'shifting' || pCat.includes('shift');
+    } else {
+      return pCat === 'non-shifting' || !pCat.includes('shift');
     }
-
-    if (targetCat === 'non-shifting') {
-      return pCat === 'non-shifting';
-    }
-
-    if (targetCat === 'shifting') {
-      return pCat === 'shifting';
-    }
-
-    return false;
   });
 
-  if (hajjPkgs.length === 0) {
-    container.innerHTML = `
-      <p class="text-gray-500 col-span-3 text-center py-8">
-        এই ক্যাটাগরিতে কোনো প্যাকেজ পাওয়া যায়নি।
-        অনুগ্রহ করে অ্যাডমিন প্যানেল থেকে প্যাকেজ ক্যাটাগরি চেক করুন।
-      </p>
-    `;
+
+  if (filteredPackages.length === 0) {
+    container.innerHTML = `<p class="text-gray-500 col-span-3 text-center py-8">এই ক্যাটাগরিতে কোনো প্যাকেজ পাওয়া যায়নি।</p>`;
     return;
   }
 
-  const isShiftMode = targetCat === 'shifting';
-
-  hajjPkgs.forEach((pkg, index) => {
-    const isFeatured = index === 0;
-
-    const cardBorder = isFeatured
-      ? 'border-2 border-[#F26522] shadow-lg relative mt-4 md:mt-0'
-      : 'border border-gray-200 shadow-sm hover:shadow-md transition-shadow mt-4 md:mt-0';
-
-    const badgeHtml = isFeatured
-      ? `
-        <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#F26522] text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow whitespace-nowrap">
-          সর্বোচ্চ সমাদৃত • প্যাকেজ
-        </div>
-      `
-      : '';
-
-    const starCount = Math.max(0, 5 - index);
-
+  filteredPackages.forEach((pkg, index) => {
+    const isFeatured = (index === 0);
+    const cardBorder = isFeatured ? 'border-2 border-[#F26522] shadow-lg relative mt-4 md:mt-0' : 'border border-gray-200 shadow-sm hover:shadow-md transition-shadow mt-4 md:mt-0';
+    const badgeHtml = isFeatured ? `<div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#F26522] text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow whitespace-nowrap">সর্বোচ্চ সমাদৃত • প্যাকেজ</div>` : '';
+    
+    const starCount = 5 - index;
     let starsHtml = '';
-
     for (let i = 0; i < 5; i++) {
-      const filled =
-        i < starCount
-          ? `style="font-variation-settings: 'FILL' 1;"`
-          : 'class="text-gray-300"';
-
-      starsHtml += `
-        <span class="material-symbols-outlined text-[18px]" ${filled}>
-          star
-        </span>
-      `;
+      const filled = i < starCount ? "style=\"font-variation-settings: 'FILL' 1;\"" : "class=\"text-gray-300\"";
+      starsHtml += `<span class="material-symbols-outlined text-[18px]" ${filled}>star</span>`;
     }
 
-    const btnClass = isFeatured
-      ? 'bg-[#F26522] hover:bg-[#d26424] text-white'
-      : 'bg-[#f0eee7] hover:bg-gray-200 text-gray-800';
-
-    const btnText = isFeatured
-      ? 'প্যাকেজ অনুসন্ধান ও বুকিং'
-      : 'প্যাকেজ অনুসন্ধান';
+    const btnClass = isFeatured ? 'bg-[#F26522] hover:bg-[#d26424] text-white' : 'bg-[#f0eee7] hover:bg-gray-200 text-gray-800';
+    const btnText = isFeatured ? 'প্যাকেজ অনুসন্ধান ও বুকিং' : 'প্যাকেজ অনুসন্ধান';
 
     let desc = pkg.description || 'মক্কা ও মদিনা হোটেল';
-
     if (!desc.includes('অথবা সমমানের')) {
       desc += ' অথবা সমমানের কোনো হোটেল';
     }
 
-    const duration =
-      pkg.duration ||
-      (isShiftMode
-        ? '৪০ দিন • শিফটিং'
-        : '৪০ দিন • নন-শিফটিং');
-
-    const hajjAccommodation = isShiftMode
-      ? 'মিনা শিফটিং এসি তাঁবু ও উন্নত আবাসন'
-      : 'মিনা ভিআইপি এসি তাঁবু (জোন-১, জামারার নিকটে)';
+    const isShiftMode = (targetCategory === 'shifting');
 
     container.innerHTML += `
       <div class="bg-white rounded-2xl ${cardBorder} p-7 flex flex-col justify-between">
-
         ${badgeHtml}
-
         <div>
           <div class="flex justify-between items-start pt-2">
-
             <div>
-              <span class="text-[12px] text-gray-500 font-medium block mb-1">
-                ${duration}
-              </span>
-
-              <h3 class="text-2xl font-bold text-gray-900 leading-tight">
-                ${pkg.title}
-              </h3>
+              <span class="text-[12px] text-gray-500 font-medium block mb-1">${pkg.duration || (isShiftMode ? '৪০ দিন • শিফটিং' : '৪০-৪৫ দিন • নন-শিফটিং')}</span>
+              <h3 class="text-2xl font-bold text-gray-900 leading-tight">${pkg.title}</h3>
             </div>
-
             <div class="flex text-[#333333]">
               ${starsHtml}
             </div>
-
           </div>
 
           <div class="mt-5 space-y-3 bg-[#f6f3ec] p-4 rounded-xl border border-[#dec1b4]/30">
-
             <div class="flex items-start justify-between text-[12px]">
-
               <span class="flex items-start gap-2 text-gray-700 w-full">
-
-                <span class="material-symbols-outlined text-[16px] text-[#F26522] shrink-0 mt-0.5">
-                  location_city
-                </span>
-
+                <span class="material-symbols-outlined text-[16px] text-[#F26522] shrink-0 mt-0.5">location_city</span>
                 <span>${desc}</span>
-
               </span>
-
             </div>
-
           </div>
 
           <ul class="mt-7 space-y-3.5 text-[13px] text-gray-700">
-
             <li class="flex items-start gap-2.5">
-              <span class="material-symbols-outlined text-[#F26522] text-[18px] shrink-0 mt-0.5">
-                check_circle
-              </span>
-              <span>${hajjAccommodation}</span>
+              <span class="material-symbols-outlined text-[#F26522] text-[18px] shrink-0 mt-0.5">check_circle</span>
+              <span>${isShiftMode ? 'মিনা শিফটিং এসি তাঁবু ও উন্নত আবাসন' : 'মিনা ভিআইপি এসি তাঁবু (জোন-১, জামারার নিকটে)'}</span>
             </li>
-
             <li class="flex items-start gap-2.5">
-              <span class="material-symbols-outlined text-[#F26522] text-[18px] shrink-0 mt-0.5">
-                check_circle
-              </span>
+              <span class="material-symbols-outlined text-[#F26522] text-[18px] shrink-0 mt-0.5">check_circle</span>
               <span>সৌদি এয়ারলাইন্স / বিমান বাংলাদেশ সরাসরি ফ্লাইট</span>
             </li>
-
             <li class="flex items-start gap-2.5">
-              <span class="material-symbols-outlined text-[#F26522] text-[18px] shrink-0 mt-0.5">
-                check_circle
-              </span>
+              <span class="material-symbols-outlined text-[#F26522] text-[18px] shrink-0 mt-0.5">check_circle</span>
               <span>প্রতিদিন ৩ বেলা সুস্বাদু বুফে খাবার</span>
             </li>
-
             <li class="flex items-start gap-2.5">
-              <span class="material-symbols-outlined text-[#F26522] text-[18px] shrink-0 mt-0.5">
-                check_circle
-              </span>
+              <span class="material-symbols-outlined text-[#F26522] text-[18px] shrink-0 mt-0.5">check_circle</span>
               <span>প্রখ্যাত মুফতি ও বিশিষ্ট আলেম সার্বক্ষণিক সঙ্গে থাকবেন</span>
             </li>
-
           </ul>
         </div>
 
         <div class="mt-8 pt-6 border-t border-gray-100">
-
           <div class="flex items-end justify-between mb-5">
-
-            <span class="text-[11px] text-gray-500 font-medium mb-1.5">
-              সর্বমোট মূল্য (জনপ্রতি)
-            </span>
-
+            <span class="text-[11px] text-gray-500 font-medium mb-1.5">সর্বমোট মূল্য (জনপ্রতি)</span>
             <div class="text-right">
-
-              <span class="text-[28px] font-bold text-[#F26522]">
-                ৳ ${pkg.price}*
-              </span>
-
-              <span class="block text-[11px] text-gray-500 mt-1">
-                বা রিয়াল সমমূল্য
-              </span>
-
+              <span class="text-[28px] font-bold text-[#F26522]">৳ ${pkg.price}*</span>
+              <span class="block text-[11px] text-gray-500 mt-1">বা রিয়াল সমমূল্য</span>
             </div>
-
           </div>
-
-          <button
-            type="button"
-            class="w-full ${btnClass} py-3 rounded-lg text-[15px] font-bold flex items-center justify-center gap-2 transition-all"
-            onclick="openModal(${JSON.stringify(pkg.title)})"
-          >
+          <button onclick="openModal('${pkg.title}')" class="w-full ${btnClass} py-3 rounded-lg text-[15px] font-bold flex items-center justify-center gap-2 transition-all">
             <span>${btnText}</span>
-
-            <span class="material-symbols-outlined text-[20px]">
-              arrow_forward
-            </span>
+            <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
           </button>
-
         </div>
-
       </div>
     `;
   });

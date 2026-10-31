@@ -34,15 +34,36 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 db.run(`ALTER TABLE packages ADD COLUMN duration TEXT`, () => {});
                 db.run(`ALTER TABLE packages ADD COLUMN description TEXT`, () => {});
 
-                db.get("SELECT COUNT(*) as count FROM packages", (err, row) => {
+                // Ensure default Non-Shifting packages exist
+                db.get("SELECT COUNT(*) as count FROM packages WHERE category = 'non-shifting' OR category IS NULL", (err, row) => {
                     if (!err && row.count === 0) {
                         db.run(`INSERT INTO packages (type, category, title, price, duration, description) VALUES 
                             ('hajj', 'non-shifting', 'ভিআইপি এক্সিকিউটিভ হজ', '৮,৫০,০০০', '৪০-৪৫ দিন • নন-শিফটিং', 'মক্কা: ক্লক টাওয়ার / ফেয়ারমন্ট অথবা সমমানের কোনো হোটেল'),
                             ('hajj', 'non-shifting', 'প্রিমিয়াম ডিলাক্স হজ', '৬,৭০,০০০', '৩৫-৪০ দিন • নন-শিফটিং', 'মক্কা: সুইসোটেল / আল সাফওয়াহ অথবা সমমানের কোনো হোটেল'),
-                            ('hajj', 'non-shifting', 'স্ট্যান্ডার্ড কমফোর্ট হজ', '৫,৫০,০০০', '৩০-৩৫ দিন • নন-শিফটিং', 'মক্কা: মিসফালাহ / ইব্রাহিম খলিল রোড অথবা সমমানের কোনো হোটেল'),
+                            ('hajj', 'non-shifting', 'স্ট্যান্ডার্ড কমফোর্ট হজ', '৫,৫০,০০০', '৩০-৩৫ দিন • নন-শিফটিং', 'মক্কা: মিসফালাহ / ইব্রাহিম খলিল রোড অথবা সমমানের কোনো হোটেল')
+                        `);
+                    }
+                });
+
+                // Ensure default Shifting packages exist
+                db.get("SELECT COUNT(*) as count FROM packages WHERE category = 'shifting'", (err, row) => {
+                    if (!err && row.count === 0) {
+                        db.run(`INSERT INTO packages (type, category, title, price, duration, description) VALUES 
                             ('hajj', 'shifting', 'শিফটিং গোল্ড হজ প্যাকেজ', '৭,২০,০০০', '৪০ দিন • শিফটিং', 'মক্কা ও মদিনা শিফটিং জোন অথবা সমমানের কোনো হোটেল'),
                             ('hajj', 'shifting', 'শিফটিং সিলভার হজ প্যাকেজ', '৬,১০,০০০', '৪০ দিন • শিফটিং', 'আজিজিয়া ও হারাম জোন অথবা সমমানের কোনো হোটেল'),
                             ('hajj', 'shifting', 'শিফটিং ইকোনমি হজ প্যাকেজ', '৫,২০,০০০', '৩৫ দিন • শিফটিং', 'বাজেট ফ্রেন্ডলি শিফটিং আবাসন অথবা সমমানের কোনো হোটেল')
+                        `);
+                    }
+                });
+
+                // Ensure default Umrah packages exist
+                db.get("SELECT COUNT(*) as count FROM packages WHERE type = 'umrah'", (err, row) => {
+                    if (!err && row.count === 0) {
+                        db.run(`INSERT INTO packages (type, category, title, price, duration, description) VALUES 
+                            ('umrah', 'umrah', '১০ দিন লাক্সারি উমরাহ', '২,৬৫,০০০', '১০ দিন • ভিআইপি ৫-স্টার', 'ক্লক টাওয়ার ও নববী চত্বর অথবা সমমানের কোনো হোটেল'),
+                            ('umrah', 'umrah', '১৪ দিন ক্লাসিক উমরাহ', '১,৯৫,০০০', '১৪ দিন • প্রিমিয়াম ৪-স্টার', 'হারামের নিকটবর্তী দূরত্ব অথবা সমমানের কোনো হোটেল'),
+                            ('umrah', 'umrah', '১৪ দিন গ্রুপ উমরাহ', '১,৬৫,০০০', '১৪ দিন • স্ট্যান্ডার্ড ৩-স্টার', 'নিয়মিত সাপ্তাহিক ফ্লাইট অথবা সমমানের কোনো হোটেল'),
+                            ('umrah', 'umrah', '৭ দিন এক্সপ্রেস উমরাহ', '১,৪৫,০০০', '৭ দিন • ইকোনমি বাজেট', 'কর্মজীবী ও ব্যবসায়ীদের জন্য অথবা সমমানের কোনো হোটেল')
                         `);
                     }
                 });
